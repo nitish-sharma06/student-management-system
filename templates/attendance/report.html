@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+
+{% block title %}Attendance Report - {{ school_name }}{% endblock %}
+{% block header_title %}Class Attendance Analytics & Register{% endblock %}
+
+{% block content %}
+<div class="space-y-6 pb-12">
+
+    <!-- Class Selector -->
+    <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col sm:flex-row items-center justify-between gap-4">
+        <form method="GET" action="{{ url_for('attendance_report') }}" class="flex items-center gap-3 w-full sm:w-auto">
+            <label class="text-xs font-semibold text-slate-700">Select Class:</label>
+            <select name="class_id" onchange="this.form.submit()" class="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-blue-500 font-semibold">
+                {% for c in classes %}
+                <option value="{{ c.id }}" {% if selected_class_id == c.id %}selected{% endif %}>{{ c.name }}</option>
+                {% endfor %}
+            </select>
+        </form>
+
+        <a href="{{ url_for('attendance_index', class_id=selected_class_id) }}" class="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-600 hover:text-blue-700">
+            <i class="fa-solid fa-calendar-plus"></i> Go to Daily Marker &rarr;
+        </a>
+    </div>
+
+    <!-- Attendance Summary Table -->
+    <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+        <div class="p-5 border-b border-slate-200/80 flex items-center justify-between">
+            <div>
+                <h3 class="text-sm font-bold text-slate-800">Class Attendance Summary: {{ current_class.name }}</h3>
+                <p class="text-xs text-slate-400">Cumulative attendance records across all sessions</p>
+            </div>
+        </div>
+
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+                <thead class="bg-slate-50 text-slate-500 font-semibold border-b border-slate-200 uppercase tracking-wider text-[11px]">
+                    <tr>
+                        <th class="py-3 px-4">Roll No</th>
+                        <th class="py-3 px-4">Student Name</th>
+                        <th class="py-3 px-4 text-center">Total Logged</th>
+                        <th class="py-3 px-4 text-center text-emerald-600">Present</th>
+                        <th class="py-3 px-4 text-center text-rose-600">Absent</th>
+                        <th class="py-3 px-4 text-center text-amber-600">Late</th>
+                        <th class="py-3 px-4 text-center text-blue-600">Excused</th>
+                        <th class="py-3 px-4 text-center">Attendance %</th>
+                        <th class="py-3 px-4 text-right">Profile</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 text-slate-700">
+                    {% for s in summaries %}
+                    <tr class="hover:bg-slate-50 transition-colors">
+                        <td class="py-3 px-4 font-mono font-bold text-slate-900">#{{ s.roll_no }}</td>
+                        <td class="py-3 px-4 font-semibold text-slate-900">
+                            {{ s.first_name }} {{ s.last_name }}
+                            <span class="block text-[11px] text-slate-400 font-normal font-mono">{{ s.admission_no }}</span>
+                        </td>
+                        <td class="py-3 px-4 text-center font-medium">{{ s.total_days }}</td>
+                        <td class="py-3 px-4 text-center font-semibold text-emerald-700">{{ s.present_count }}</td>
+                        <td class="py-3 px-4 text-center font-semibold text-rose-700">{{ s.absent_count }}</td>
+                        <td class="py-3 px-4 text-center font-semibold text-amber-700">{{ s.late_count }}</td>
+                        <td class="py-3 px-4 text-center font-semibold text-blue-700">{{ s.excused_count }}</td>
+                        <td class="py-3 px-4 text-center">
+                            <span class="px-2.5 py-1 rounded-full text-xs font-bold
+                                {% if s.rate >= 85 %}bg-emerald-100 text-emerald-800
+                                {% elif s.rate >= 75 %}bg-blue-100 text-blue-800
+                                {% else %}bg-rose-100 text-rose-800 font-extrabold animate-pulse{% endif %}">
+                                {{ s.rate|percent }}
+                            </span>
+                        </td>
+                        <td class="py-3 px-4 text-right">
+                            <a href="{{ url_for('student_detail', id=s.id) }}" class="text-xs font-semibold text-blue-600 hover:text-blue-700">
+                                View &rarr;
+                            </a>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="9" class="py-8 text-center text-slate-400">No attendance logs available for this class yet.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

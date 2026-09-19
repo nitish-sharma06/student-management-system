@@ -1,0 +1,283 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - {{ school_name }}{% endblock %}
+{% block header_title %}Institutional Dashboard{% endblock %}
+
+{% block content %}
+<div class="space-y-6 pb-8">
+
+    <!-- KPI Metric Cards Row -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+        <!-- Students Metric -->
+        <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between hover:border-blue-300 transition-all">
+            <div>
+                <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Active Students</p>
+                <h3 class="text-2xl font-bold text-slate-900 mt-1">{{ total_students }}</h3>
+                <p class="text-xs text-emerald-600 font-medium mt-1.5 flex items-center gap-1">
+                    <i class="fa-solid fa-arrow-trend-up"></i>
+                    <span>Enrolled this session</span>
+                </p>
+            </div>
+            <div class="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center text-xl shadow-inner">
+                <i class="fa-solid fa-user-graduate"></i>
+            </div>
+        </div>
+
+        <!-- Teachers Metric -->
+        <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between hover:border-indigo-300 transition-all">
+            <div>
+                <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Teaching Faculty</p>
+                <h3 class="text-2xl font-bold text-slate-900 mt-1">{{ total_teachers }}</h3>
+                <p class="text-xs text-slate-500 font-medium mt-1.5 flex items-center gap-1">
+                    <i class="fa-solid fa-users"></i>
+                    <span>Across {{ total_courses }} subjects</span>
+                </p>
+            </div>
+            <div class="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center text-xl shadow-inner">
+                <i class="fa-solid fa-chalkboard-user"></i>
+            </div>
+        </div>
+
+        <!-- Overall Attendance Metric -->
+        <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between hover:border-emerald-300 transition-all">
+            <div>
+                <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Avg. Attendance</p>
+                <h3 class="text-2xl font-bold text-slate-900 mt-1">{{ overall_attendance|percent }}</h3>
+                <p class="text-xs text-emerald-600 font-medium mt-1.5 flex items-center gap-1">
+                    <i class="fa-solid fa-circle-check"></i>
+                    <span>Campus-wide rate</span>
+                </p>
+            </div>
+            <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl shadow-inner">
+                <i class="fa-solid fa-clipboard-user"></i>
+            </div>
+        </div>
+
+        <!-- Fees Collected Metric -->
+        <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between hover:border-amber-300 transition-all">
+            <div>
+                <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Fee Collection</p>
+                <h3 class="text-2xl font-bold text-slate-900 mt-1">{{ total_collected|currency }}</h3>
+                <p class="text-xs text-amber-600 font-medium mt-1.5 flex items-center gap-1">
+                    <i class="fa-solid fa-clock"></i>
+                    <span>Pending: {{ total_pending|currency }}</span>
+                </p>
+            </div>
+            <div class="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center text-xl shadow-inner">
+                <i class="fa-solid fa-wallet"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions Bar -->
+    <div class="bg-gradient-to-r from-slate-900 via-blue-950 to-slate-900 text-white rounded-2xl p-5 shadow-lg flex flex-wrap items-center justify-between gap-4">
+        <div class="flex items-center gap-3">
+            <div class="w-10 h-10 rounded-xl bg-blue-600 flex items-center justify-center text-white text-lg">
+                <i class="fa-solid fa-bolt"></i>
+            </div>
+            <div>
+                <h4 class="font-bold text-sm text-white">Management Action Hub</h4>
+                <p class="text-xs text-slate-300">Fast shortcuts to common daily academic and administrative tasks</p>
+            </div>
+        </div>
+        <div class="flex flex-wrap items-center gap-2.5">
+            <a href="{{ url_for('student_create') }}" class="bg-blue-600 hover:bg-blue-500 text-white px-3.5 py-2 rounded-xl text-xs font-semibold transition-colors flex items-center gap-2 shadow-sm">
+                <i class="fa-solid fa-user-plus"></i> New Student
+            </a>
+            <a href="{{ url_for('attendance_index') }}" class="bg-slate-800 hover:bg-slate-700 text-white px-3.5 py-2 rounded-xl text-xs font-semibold transition-colors flex items-center gap-2 border border-slate-700">
+                <i class="fa-solid fa-calendar-check"></i> Mark Attendance
+            </a>
+            <a href="{{ url_for('fees_list') }}" class="bg-slate-800 hover:bg-slate-700 text-white px-3.5 py-2 rounded-xl text-xs font-semibold transition-colors flex items-center gap-2 border border-slate-700">
+                <i class="fa-solid fa-receipt"></i> Record Fee
+            </a>
+            <a href="{{ url_for('examinations_list') }}" class="bg-slate-800 hover:bg-slate-700 text-white px-3.5 py-2 rounded-xl text-xs font-semibold transition-colors flex items-center gap-2 border border-slate-700">
+                <i class="fa-solid fa-pen-nib"></i> Enter Marks
+            </a>
+        </div>
+    </div>
+
+    <!-- Analytics Charts Row -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <!-- Grade Distribution Chart -->
+        <div class="lg:col-span-2 bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm">
+            <div class="flex items-center justify-between mb-4">
+                <div>
+                    <h3 class="text-sm font-bold text-slate-800">Academic Grade Distribution</h3>
+                    <p class="text-xs text-slate-400">Exam performance across letter grades</p>
+                </div>
+                <span class="text-xs font-semibold bg-blue-50 text-blue-700 px-2.5 py-1 rounded-full">Mid-Term Results</span>
+            </div>
+            <div class="h-64 relative">
+                <canvas id="gradesChart"></canvas>
+            </div>
+        </div>
+
+        <!-- Attendance Breakdown Chart -->
+        <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm">
+            <div class="flex items-center justify-between mb-4">
+                <div>
+                    <h3 class="text-sm font-bold text-slate-800">Attendance Ratio</h3>
+                    <p class="text-xs text-slate-400">Past 14 days campus breakdown</p>
+                </div>
+                <i class="fa-solid fa-chart-pie text-slate-400"></i>
+            </div>
+            <div class="h-64 relative flex items-center justify-center">
+                <canvas id="attendanceChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Admissions & Latest Notices Row -->
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Recent Student Admissions -->
+        <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+            <div class="p-5 border-b border-slate-100 flex items-center justify-between">
+                <div>
+                    <h3 class="text-sm font-bold text-slate-800">Recent Student Admissions</h3>
+                    <p class="text-xs text-slate-400">Newly registered students</p>
+                </div>
+                <a href="{{ url_for('students_list') }}" class="text-xs font-semibold text-blue-600 hover:text-blue-700">View All &rarr;</a>
+            </div>
+            <div class="divide-y divide-slate-100">
+                {% for student in recent_students %}
+                <div class="p-4 flex items-center justify-between hover:bg-slate-50 transition-colors">
+                    <div class="flex items-center gap-3">
+                        <img src="{{ student.avatar_url }}" alt="avatar" class="w-10 h-10 rounded-full border border-slate-200 bg-slate-100 p-0.5">
+                        <div>
+                            <a href="{{ url_for('student_detail', id=student.id) }}" class="text-sm font-semibold text-slate-900 hover:text-blue-600">
+                                {{ student.first_name }} {{ student.last_name }}
+                            </a>
+                            <p class="text-xs text-slate-400 flex items-center gap-2">
+                                <span>{{ student.admission_no }}</span>
+                                <span>&bull;</span>
+                                <span class="text-slate-600 font-medium">{{ student.class_name }}</span>
+                            </p>
+                        </div>
+                    </div>
+                    <div class="text-right">
+                        <span class="text-xs font-semibold px-2.5 py-1 rounded-full badge-{{ student.status.lower() }}">
+                            {{ student.status }}
+                        </span>
+                        <p class="text-[11px] text-slate-400 mt-1">Roll #{{ student.roll_no }}</p>
+                    </div>
+                </div>
+                {% else %}
+                <div class="p-6 text-center text-sm text-slate-400">No student records found.</div>
+                {% endfor %}
+            </div>
+        </div>
+
+        <!-- Latest Announcements & Notices -->
+        <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+            <div class="p-5 border-b border-slate-100 flex items-center justify-between">
+                <div>
+                    <h3 class="text-sm font-bold text-slate-800">Campus Noticeboard</h3>
+                    <p class="text-xs text-slate-400">Official updates & alerts</p>
+                </div>
+                <a href="{{ url_for('announcements_list') }}" class="text-xs font-semibold text-blue-600 hover:text-blue-700">View All &rarr;</a>
+            </div>
+            <div class="divide-y divide-slate-100">
+                {% for notice in recent_notices %}
+                <div class="p-4 hover:bg-slate-50 transition-colors">
+                    <div class="flex items-center justify-between mb-1.5">
+                        <div class="flex items-center gap-2">
+                            <span class="text-[10px] font-bold px-2 py-0.5 rounded uppercase
+                                {% if notice.priority == 'Urgent' %}bg-rose-100 text-rose-700 border border-rose-200
+                                {% elif notice.priority == 'Normal' %}bg-blue-100 text-blue-700 border border-blue-200
+                                {% else %}bg-slate-100 text-slate-600{% endif %}">
+                                {{ notice.priority }}
+                            </span>
+                            <span class="text-xs text-slate-400">To: {{ notice.target_audience }}</span>
+                        </div>
+                        <span class="text-[11px] text-slate-400">{{ notice.created_at }}</span>
+                    </div>
+                    <h5 class="text-xs font-bold text-slate-800">{{ notice.title }}</h5>
+                    <p class="text-xs text-slate-500 line-clamp-2 mt-1">{{ notice.content }}</p>
+                </div>
+                {% else %}
+                <div class="p-6 text-center text-sm text-slate-400">No active announcements.</div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+    fetch('/api/dashboard/stats')
+        .then(res => res.json())
+        .then(data => {
+            // 1. Grade distribution bar chart
+            const gradeLabels = data.grades.map(g => g.label);
+            const gradeValues = data.grades.map(g => g.value);
+            
+            const ctxGrades = document.getElementById('gradesChart').getContext('2d');
+            new Chart(ctxGrades, {
+                type: 'bar',
+                data: {
+                    labels: gradeLabels,
+                    datasets: [{
+                        label: 'Students Count',
+                        data: gradeValues,
+                        backgroundColor: [
+                            'rgba(16, 185, 129, 0.85)', // A+
+                            'rgba(59, 130, 246, 0.85)', // A
+                            'rgba(99, 102, 241, 0.85)', // B
+                            'rgba(245, 158, 11, 0.85)', // C
+                            'rgba(249, 115, 22, 0.85)', // D
+                            'rgba(239, 68, 68, 0.85)',  // F
+                        ],
+                        borderRadius: 8,
+                        borderSkipped: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false }
+                    },
+                    scales: {
+                        y: { beginAtZero: true, grid: { color: '#f1f5f9' } },
+                        x: { grid: { display: false } }
+                    }
+                }
+            });
+
+            // 2. Attendance Doughnut chart
+            const attLabels = data.attendance.map(a => a.label);
+            const attValues = data.attendance.map(a => a.value);
+
+            const ctxAtt = document.getElementById('attendanceChart').getContext('2d');
+            new Chart(ctxAtt, {
+                type: 'doughnut',
+                data: {
+                    labels: attLabels,
+                    datasets: [{
+                        data: attValues,
+                        backgroundColor: [
+                            '#10b981', // Present
+                            '#ef4444', // Absent
+                            '#f59e0b', // Late
+                            '#6366f1'  // Excused
+                        ],
+                        borderWidth: 2,
+                        borderColor: '#ffffff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom', labels: { boxWidth: 12, font: { size: 11 } } }
+                    },
+                    cutout: '70%'
+                }
+            });
+        });
+});
+</script>
+{% endblock %}

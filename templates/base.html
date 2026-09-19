@@ -1,0 +1,191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{{ school_name }}{% endblock %} | SMS</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#eff6ff',
+                            100: '#dbeafe',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                            800: '#1e40af',
+                            900: '#1e3a8a',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <!-- Chart.js -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Custom CSS -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col antialiased">
+
+    <div class="flex h-screen overflow-hidden">
+        <!-- Sidebar Navigation -->
+        <aside id="sidebar" class="no-print w-64 bg-slate-900 text-slate-300 flex flex-col flex-shrink-0 transition-all duration-300 z-30 shadow-xl">
+            <!-- Brand / Logo -->
+            <div class="h-16 flex items-center px-6 bg-slate-950 border-b border-slate-800 gap-3">
+                <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-500 flex items-center justify-center text-white font-bold shadow-md shadow-blue-500/20">
+                    <i class="fa-solid fa-graduation-cap text-lg"></i>
+                </div>
+                <div class="overflow-hidden">
+                    <h1 class="text-sm font-bold text-white tracking-wide truncate">Apex Academy</h1>
+                    <p class="text-[11px] text-slate-400 font-medium tracking-tight">Student Management</p>
+                </div>
+            </div>
+
+            <!-- Nav Links -->
+            <nav class="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+                <a href="{{ url_for('dashboard') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors hover:bg-slate-800 hover:text-white {% if request.path == '/' %}bg-blue-600 text-white shadow-sm shadow-blue-500/30 font-semibold{% endif %}">
+                    <i class="fa-solid fa-chart-pie w-5 text-center"></i>
+                    <span>Dashboard</span>
+                </a>
+
+                <div class="pt-3 pb-1 px-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                    Student Information
+                </div>
+
+                <a href="{{ url_for('students_list') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors hover:bg-slate-800 hover:text-white {% if request.path.startswith('/students') %}bg-blue-600 text-white shadow-sm shadow-blue-500/30 font-semibold{% endif %}">
+                    <i class="fa-solid fa-user-graduate w-5 text-center"></i>
+                    <span>Students Directory</span>
+                </a>
+
+                <a href="{{ url_for('attendance_index') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors hover:bg-slate-800 hover:text-white {% if request.path.startswith('/attendance') %}bg-blue-600 text-white shadow-sm shadow-blue-500/30 font-semibold{% endif %}">
+                    <i class="fa-solid fa-calendar-check w-5 text-center"></i>
+                    <span>Attendance</span>
+                </a>
+
+                <div class="pt-3 pb-1 px-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                    Academics & Exams
+                </div>
+
+                <a href="{{ url_for('classes_list') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors hover:bg-slate-800 hover:text-white {% if request.path == '/academics/classes' %}bg-blue-600 text-white shadow-sm shadow-blue-500/30 font-semibold{% endif %}">
+                    <i class="fa-solid fa-chalkboard-user w-5 text-center"></i>
+                    <span>Classes & Sections</span>
+                </a>
+
+                <a href="{{ url_for('subjects_list') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors hover:bg-slate-800 hover:text-white {% if request.path == '/academics/subjects' %}bg-blue-600 text-white shadow-sm shadow-blue-500/30 font-semibold{% endif %}">
+                    <i class="fa-solid fa-book-bookmark w-5 text-center"></i>
+                    <span>Courses & Subjects</span>
+                </a>
+
+                <a href="{{ url_for('examinations_list') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors hover:bg-slate-800 hover:text-white {% if request.path.startswith('/examinations') %}bg-blue-600 text-white shadow-sm shadow-blue-500/30 font-semibold{% endif %}">
+                    <i class="fa-solid fa-award w-5 text-center"></i>
+                    <span>Exams & Marks</span>
+                </a>
+
+                <div class="pt-3 pb-1 px-3 text-[10px] font-bold text-slate-500 uppercase tracking-wider">
+                    Administration
+                </div>
+
+                <a href="{{ url_for('fees_list') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors hover:bg-slate-800 hover:text-white {% if request.path.startswith('/fees') %}bg-blue-600 text-white shadow-sm shadow-blue-500/30 font-semibold{% endif %}">
+                    <i class="fa-solid fa-file-invoice-dollar w-5 text-center"></i>
+                    <span>Fee & Accounts</span>
+                </a>
+
+                <a href="{{ url_for('teachers_list') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors hover:bg-slate-800 hover:text-white {% if request.path.startswith('/teachers') %}bg-blue-600 text-white shadow-sm shadow-blue-500/30 font-semibold{% endif %}">
+                    <i class="fa-solid fa-users-rectangle w-5 text-center"></i>
+                    <span>Teachers Directory</span>
+                </a>
+
+                <a href="{{ url_for('announcements_list') }}" class="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-colors hover:bg-slate-800 hover:text-white {% if request.path.startswith('/announcements') %}bg-blue-600 text-white shadow-sm shadow-blue-500/30 font-semibold{% endif %}">
+                    <i class="fa-solid fa-bullhorn w-5 text-center"></i>
+                    <span>Noticeboard</span>
+                </a>
+            </nav>
+
+            <!-- Academic Year Pill Footer -->
+            <div class="p-3 bg-slate-950 border-t border-slate-800 text-xs flex items-center justify-between text-slate-400">
+                <span class="flex items-center gap-2">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500 animate-pulse"></span>
+                    <span>Session: {{ academic_year }}</span>
+                </span>
+                <span class="text-[10px] bg-slate-800 px-2 py-0.5 rounded text-slate-300 font-mono">v1.0</span>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <div class="flex-1 flex flex-col overflow-hidden">
+            <!-- Topbar Header -->
+            <header id="top-bar" class="no-print h-16 bg-white border-b border-slate-200 px-6 flex items-center justify-between flex-shrink-0 shadow-sm z-20">
+                <div class="flex items-center gap-4">
+                    <h2 class="text-lg font-bold text-slate-800">
+                        {% block header_title %}Overview{% endblock %}
+                    </h2>
+                    <span class="hidden md:inline-block text-xs text-slate-400 font-medium">| &nbsp; {{ school_name }}</span>
+                </div>
+
+                <div class="flex items-center gap-3">
+                    <a href="{{ url_for('student_create') }}" class="hidden sm:inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-3.5 py-2 rounded-lg transition-colors shadow-sm">
+                        <i class="fa-solid fa-plus text-[10px]"></i>
+                        <span>Enroll Student</span>
+                    </a>
+                    <a href="{{ url_for('export_students_csv') }}" title="Export Student Directory CSV" class="text-slate-600 hover:text-slate-900 bg-slate-100 hover:bg-slate-200 p-2 rounded-lg text-xs font-medium transition-colors">
+                        <i class="fa-solid fa-file-export mr-1"></i> Export
+                    </a>
+                    <div class="h-6 w-[1px] bg-slate-200"></div>
+                    <div class="flex items-center gap-2">
+                        <div class="w-8 h-8 rounded-full bg-indigo-600 text-white flex items-center justify-center font-bold text-xs">
+                            A
+                        </div>
+                        <div class="hidden lg:block text-left">
+                            <p class="text-xs font-semibold text-slate-800">Administrator</p>
+                            <p class="text-[10px] text-slate-400">Head Office</p>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Alerts Container -->
+            <div class="no-print px-6 pt-4">
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% if messages %}
+                        {% for category, message in messages %}
+                            <div class="flash-alert mb-3 p-3 rounded-xl text-sm flex items-center justify-between shadow-sm border
+                                {% if category == 'success' %}bg-emerald-50 text-emerald-800 border-emerald-200
+                                {% elif category == 'danger' %}bg-rose-50 text-rose-800 border-rose-200
+                                {% elif category == 'warning' %}bg-amber-50 text-amber-800 border-amber-200
+                                {% else %}bg-blue-50 text-blue-800 border-blue-200{% endif %}">
+                                <div class="flex items-center gap-2.5">
+                                    <i class="fa-solid 
+                                        {% if category == 'success' %}fa-circle-check text-emerald-600
+                                        {% elif category == 'danger' %}fa-circle-exclamation text-rose-600
+                                        {% elif category == 'warning' %}fa-triangle-exclamation text-amber-600
+                                        {% else %}fa-circle-info text-blue-600{% endif %}"></i>
+                                    <span>{{ message }}</span>
+                                </div>
+                                <button onclick="this.parentElement.remove()" class="text-slate-400 hover:text-slate-700">
+                                    <i class="fa-solid fa-xmark text-xs"></i>
+                                </button>
+                            </div>
+                        {% endfor %}
+                    {% endif %}
+                {% endwith %}
+            </div>
+
+            <!-- Page Body View -->
+            <main class="flex-1 overflow-y-auto px-6 py-4">
+                {% block content %}{% endblock %}
+            </main>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

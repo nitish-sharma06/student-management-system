@@ -1,0 +1,70 @@
+/* Custom CSS & Print Enhancements */
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+
+body {
+    font-family: 'Plus Jakarta Sans', system-ui, -apple-system, sans-serif;
+}
+
+/* Custom scrollbars */
+::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+}
+::-webkit-scrollbar-track {
+    background: #f1f5f9;
+}
+::-webkit-scrollbar-thumb {
+    background: #cbd5e1;
+    border-radius: 9999px;
+}
+::-webkit-scrollbar-thumb:hover {
+    background: #94a3b8;
+}
+
+/* Glassmorphism subtle effect */
+.glass-panel {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(12px);
+}
+
+/* Badge styles */
+.badge-active {
+    background-color: #ecfdf5;
+    color: #047857;
+    border: 1px solid #a7f3d0;
+}
+.badge-inactive {
+    background-color: #fef2f2;
+    color: #b91c1c;
+    border: 1px solid #fecaca;
+}
+.badge-graduated {
+    background-color: #eff6ff;
+    color: #1d4ed8;
+    border: 1px solid #bfdbfe;
+}
+
+/* Print Styles */
+@media print {
+    .no-print, nav, aside, header, footer, .btn-action, #sidebar, #top-bar {
+        display: none !important;
+    }
+    body {
+        background: white !important;
+        color: black !important;
+        font-size: 11pt !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+    .print-container {
+        width: 100% !important;
+        max-width: 100% !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        box-shadow: none !important;
+        border: none !important;
+    }
+    .page-break {
+        page-break-before: always;
+    }
+}

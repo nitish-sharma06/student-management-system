@@ -1,0 +1,152 @@
+{% extends "base.html" %}
+
+{% block title %}Students Directory - {{ school_name }}{% endblock %}
+{% block header_title %}Students Management Directory{% endblock %}
+
+{% block content %}
+<div class="space-y-5 pb-8">
+
+    <!-- Top Action & Filter Header -->
+    <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div>
+                <h3 class="text-base font-bold text-slate-900">Enrolled Students ({{ total_count }})</h3>
+                <p class="text-xs text-slate-500">Filter, search, and manage institutional student records</p>
+            </div>
+            <div class="flex items-center gap-3">
+                <a href="{{ url_for('export_students_csv') }}" class="inline-flex items-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold px-3.5 py-2.5 rounded-xl transition-colors">
+                    <i class="fa-solid fa-file-csv text-emerald-600 text-sm"></i>
+                    <span>Export CSV</span>
+                </a>
+                <a href="{{ url_for('student_create') }}" class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-4 py-2.5 rounded-xl transition-colors shadow-sm">
+                    <i class="fa-solid fa-user-plus"></i>
+                    <span>Add New Student</span>
+                </a>
+            </div>
+        </div>
+
+        <!-- Filter Form -->
+        <form method="GET" action="{{ url_for('students_list') }}" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3 pt-2">
+            <!-- Search Term -->
+            <div class="md:col-span-2 relative">
+                <input type="text" name="q" value="{{ search }}" placeholder="Search by name, roll, admission no..." 
+                    class="w-full bg-slate-50 border border-slate-200 rounded-xl pl-9 pr-3 py-2 text-xs focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all">
+                <i class="fa-solid fa-magnifying-glass absolute left-3 top-2.5 text-slate-400 text-xs"></i>
+            </div>
+
+            <!-- Class Filter -->
+            <div>
+                <select name="class_id" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all">
+                    <option value="">All Classes</option>
+                    {% for c in classes %}
+                    <option value="{{ c.id }}" {% if selected_class == c.id|string %}selected{% endif %}>{{ c.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Status Filter -->
+            <div>
+                <select name="status" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-blue-500 focus:bg-white transition-all">
+                    <option value="">All Statuses</option>
+                    <option value="Active" {% if selected_status == 'Active' %}selected{% endif %}>Active</option>
+                    <option value="Inactive" {% if selected_status == 'Inactive' %}selected{% endif %}>Inactive</option>
+                    <option value="Graduated" {% if selected_status == 'Graduated' %}selected{% endif %}>Graduated</option>
+                </select>
+            </div>
+
+            <!-- Actions buttons -->
+            <div class="flex items-center gap-2">
+                <button type="submit" class="w-full bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold py-2 rounded-xl transition-colors">
+                    Filter
+                </button>
+                <a href="{{ url_for('students_list') }}" class="px-3 py-2 text-xs font-medium text-slate-500 hover:text-slate-800 bg-slate-100 hover:bg-slate-200 rounded-xl transition-colors">
+                    Reset
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Students Table -->
+    <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+                <thead class="bg-slate-50/80 text-slate-600 font-semibold border-b border-slate-200/80 uppercase tracking-wider text-[11px]">
+                    <tr>
+                        <th class="py-3.5 px-4">Student</th>
+                        <th class="py-3.5 px-4">Roll / Adm No</th>
+                        <th class="py-3.5 px-4">Class</th>
+                        <th class="py-3.5 px-4">Gender</th>
+                        <th class="py-3.5 px-4">Parent / Contact</th>
+                        <th class="py-3.5 px-4">Status</th>
+                        <th class="py-3.5 px-4 text-right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 text-slate-700">
+                    {% for student in students %}
+                    <tr class="hover:bg-slate-50/80 transition-colors">
+                        <td class="py-3 px-4">
+                            <div class="flex items-center gap-3">
+                                <img src="{{ student.avatar_url }}" alt="avatar" class="w-9 h-9 rounded-full bg-slate-100 border border-slate-200 p-0.5">
+                                <div>
+                                    <a href="{{ url_for('student_detail', id=student.id) }}" class="font-bold text-slate-900 hover:text-blue-600">
+                                        {{ student.first_name }} {{ student.last_name }}
+                                    </a>
+                                    <p class="text-[11px] text-slate-400">{{ student.email or 'No email' }}</p>
+                                </div>
+                            </div>
+                        </td>
+                        <td class="py-3 px-4">
+                            <span class="font-mono font-bold text-slate-900">#{{ student.roll_no }}</span>
+                            <p class="text-[11px] text-slate-400 font-mono">{{ student.admission_no }}</p>
+                        </td>
+                        <td class="py-3 px-4">
+                            <span class="font-semibold text-slate-800 bg-slate-100 px-2.5 py-1 rounded-lg">
+                                {{ student.class_name }}
+                            </span>
+                        </td>
+                        <td class="py-3 px-4">
+                            {{ student.gender }}
+                        </td>
+                        <td class="py-3 px-4">
+                            <p class="font-medium text-slate-800">{{ student.parent_name }}</p>
+                            <p class="text-[11px] text-slate-400">{{ student.parent_phone }}</p>
+                        </td>
+                        <td class="py-3 px-4">
+                            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full uppercase badge-{{ student.status.lower() }}">
+                                {{ student.status }}
+                            </span>
+                        </td>
+                        <td class="py-3 px-4 text-right">
+                            <div class="inline-flex items-center gap-1.5">
+                                <a href="{{ url_for('student_detail', id=student.id) }}" title="View Profile" class="w-7 h-7 rounded-lg bg-blue-50 text-blue-600 hover:bg-blue-100 flex items-center justify-center transition-colors">
+                                    <i class="fa-solid fa-eye text-xs"></i>
+                                </a>
+                                <a href="{{ url_for('student_id_card', id=student.id) }}" title="Student ID Card" class="w-7 h-7 rounded-lg bg-indigo-50 text-indigo-600 hover:bg-indigo-100 flex items-center justify-center transition-colors">
+                                    <i class="fa-solid fa-id-card text-xs"></i>
+                                </a>
+                                <a href="{{ url_for('student_edit', id=student.id) }}" title="Edit Details" class="w-7 h-7 rounded-lg bg-slate-100 text-slate-600 hover:bg-slate-200 flex items-center justify-center transition-colors">
+                                    <i class="fa-solid fa-pen-to-square text-xs"></i>
+                                </a>
+                                <form method="POST" action="{{ url_for('student_delete', id=student.id) }}" onsubmit="return confirm('Are you sure you want to remove this student?')" class="inline">
+                                    <button type="submit" title="Delete Student" class="w-7 h-7 rounded-lg bg-rose-50 text-rose-600 hover:bg-rose-100 flex items-center justify-center transition-colors">
+                                        <i class="fa-solid fa-trash-can text-xs"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="7" class="py-10 text-center text-slate-400 text-sm">
+                            <i class="fa-solid fa-user-slash text-2xl mb-2 text-slate-300"></i>
+                            <p>No students match your filter criteria.</p>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

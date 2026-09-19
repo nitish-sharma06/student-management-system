@@ -1,0 +1,157 @@
+{% extends "base.html" %}
+
+{% block title %}Teachers & Faculty - {{ school_name }}{% endblock %}
+{% block header_title %}Faculty & Staff Directory{% endblock %}
+
+{% block content %}
+<div class="space-y-6 pb-12">
+
+    <!-- Header & Action Bar -->
+    <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div>
+                <h3 class="text-base font-bold text-slate-900">Academic Faculty ({{ teachers|length }})</h3>
+                <p class="text-xs text-slate-500">Teachers, department chairs, and educational coordinators</p>
+            </div>
+            <button onclick="openModal('addTeacherModal')" class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-4 py-2.5 rounded-xl transition-colors shadow-sm">
+                <i class="fa-solid fa-user-plus"></i>
+                <span>Add New Faculty</span>
+            </button>
+        </div>
+
+        <!-- Filter Form -->
+        <form method="GET" action="{{ url_for('teachers_list') }}" class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
+            <input type="text" name="q" value="{{ search }}" placeholder="Search faculty by name or employee ID..." 
+                class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-blue-500">
+
+            <select name="department" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-blue-500 font-semibold">
+                <option value="">All Departments</option>
+                {% for d in departments %}
+                <option value="{{ d }}" {% if selected_dept == d %}selected{% endif %}>{{ d }}</option>
+                {% endfor %}
+            </select>
+
+            <div class="flex items-center gap-2">
+                <button type="submit" class="w-full bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold py-2 rounded-xl transition-colors">
+                    Filter Faculty
+                </button>
+                <a href="{{ url_for('teachers_list') }}" class="px-3 py-2 text-xs font-medium text-slate-500 hover:text-slate-800 bg-slate-100 rounded-xl">
+                    Reset
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Teachers Cards Grid -->
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+        {% for t in teachers %}
+        <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm hover:border-blue-300 transition-all flex flex-col justify-between space-y-4">
+            <div class="space-y-3">
+                <div class="flex items-start justify-between">
+                    <div class="w-12 h-12 rounded-2xl bg-gradient-to-tr from-blue-600 to-indigo-600 text-white flex items-center justify-center font-bold text-lg shadow-md">
+                        {{ t.full_name[:1] }}
+                    </div>
+                    <span class="text-[10px] font-bold uppercase tracking-wider bg-slate-100 text-slate-700 px-2.5 py-1 rounded-lg">
+                        {{ t.department }}
+                    </span>
+                </div>
+
+                <div>
+                    <h4 class="text-base font-bold text-slate-900">{{ t.full_name }}</h4>
+                    <p class="text-xs font-semibold text-blue-600">{{ t.designation }}</p>
+                    <p class="text-[11px] text-slate-400 font-mono mt-0.5">ID: {{ t.employee_id }}</p>
+                </div>
+
+                <div class="bg-slate-50 p-3 rounded-xl border border-slate-100 text-xs space-y-1.5 text-slate-600">
+                    <div class="flex items-center gap-2 truncate">
+                        <i class="fa-solid fa-graduation-cap text-slate-400 w-4"></i>
+                        <span class="truncate">{{ t.qualification or 'Faculty Member' }}</span>
+                    </div>
+                    <div class="flex items-center gap-2 truncate">
+                        <i class="fa-solid fa-envelope text-slate-400 w-4"></i>
+                        <span class="truncate">{{ t.email }}</span>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <i class="fa-solid fa-phone text-slate-400 w-4"></i>
+                        <span>{{ t.phone or 'N/A' }}</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="pt-2 border-t border-slate-100 text-xs flex items-center justify-between text-slate-500">
+                <span>Courses: <b>{{ t.subjects_taught or 'General' }}</b></span>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+
+    <!-- Modal: Add Teacher -->
+    <div id="addTeacherModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-5">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                <h3 class="text-sm font-bold text-slate-900">Add New Faculty Member</h3>
+                <button onclick="closeModal('addTeacherModal')" class="text-slate-400 hover:text-slate-700">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <form method="POST" action="{{ url_for('teacher_create') }}" class="space-y-4 text-xs">
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block font-semibold text-slate-700 mb-1">Employee ID *</label>
+                        <input type="text" name="employee_id" required placeholder="e.g. TCH-1009"
+                            class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block font-semibold text-slate-700 mb-1">Full Name *</label>
+                        <input type="text" name="full_name" required placeholder="e.g. Dr. Jane Smith"
+                            class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 focus:ring-2 focus:ring-blue-500">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block font-semibold text-slate-700 mb-1">Email Address *</label>
+                        <input type="email" name="email" required placeholder="faculty@apexacademy.edu"
+                            class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block font-semibold text-slate-700 mb-1">Phone Number</label>
+                        <input type="tel" name="phone" placeholder="+1 (555) 000-0000"
+                            class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 focus:ring-2 focus:ring-blue-500">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block font-semibold text-slate-700 mb-1">Academic Department *</label>
+                        <input type="text" name="department" required placeholder="e.g. Mathematics"
+                            class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block font-semibold text-slate-700 mb-1">Designation *</label>
+                        <input type="text" name="designation" required placeholder="e.g. Senior Lecturer"
+                            class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 focus:ring-2 focus:ring-blue-500">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block font-semibold text-slate-700 mb-1">Qualifications / Degrees</label>
+                    <input type="text" name="qualification" placeholder="e.g. Ph.D. in Computer Science"
+                        class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 focus:ring-2 focus:ring-blue-500">
+                </div>
+
+                <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+                    <button type="button" onclick="closeModal('addTeacherModal')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold px-4 py-2 rounded-xl">
+                        Cancel
+                    </button>
+                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-5 py-2 rounded-xl">
+                        Save Faculty
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+</div>
+{% endblock %}

@@ -1,0 +1,263 @@
+{% extends "base.html" %}
+
+{% block title %}Fee Management - {{ school_name }}{% endblock %}
+{% block header_title %}Student Billing & Fee Accounts{% endblock %}
+
+{% block content %}
+<div class="space-y-6 pb-12">
+
+    <!-- KPI Summary Row -->
+    <div class="grid grid-cols-1 sm:grid-cols-4 gap-5">
+        <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm">
+            <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Invoiced</p>
+            <h3 class="text-xl font-bold text-slate-900 mt-1">{{ kpis.total_invoiced|currency }}</h3>
+            <p class="text-xs text-slate-400 mt-1">{{ kpis.total_invoices }} statements issued</p>
+        </div>
+        <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm">
+            <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Total Collected</p>
+            <h3 class="text-xl font-bold text-emerald-600 mt-1">{{ kpis.total_collected|currency }}</h3>
+            <p class="text-xs text-emerald-600 mt-1">Confirmed payments</p>
+        </div>
+        <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm">
+            <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Outstanding Dues</p>
+            <h3 class="text-xl font-bold text-amber-600 mt-1">{{ (kpis.total_invoiced - kpis.total_collected)|currency }}</h3>
+            <p class="text-xs text-amber-600 mt-1">Pending student balances</p>
+        </div>
+        <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm">
+            <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Unpaid Invoices</p>
+            <h3 class="text-xl font-bold text-rose-600 mt-1">{{ kpis.unpaid_count }}</h3>
+            <p class="text-xs text-rose-600 mt-1">Requires follow-up</p>
+        </div>
+    </div>
+
+    <!-- Action & Filters Bar -->
+    <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm space-y-4">
+        <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div>
+                <h3 class="text-sm font-bold text-slate-900">Student Fee Statements ({{ invoices|length }})</h3>
+                <p class="text-xs text-slate-500">Track invoices, record payment receipts, and review balances</p>
+            </div>
+            <button onclick="openModal('addInvoiceModal')" class="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold px-4 py-2.5 rounded-xl transition-colors shadow-sm">
+                <i class="fa-solid fa-plus"></i>
+                <span>Issue New Invoice</span>
+            </button>
+        </div>
+
+        <!-- Filter Form -->
+        <form method="GET" action="{{ url_for('fees_list') }}" class="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-2">
+            <input type="text" name="q" value="{{ search }}" placeholder="Search by student name or invoice no..." 
+                class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-blue-500">
+
+            <select name="status" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs focus:ring-2 focus:ring-blue-500 font-semibold">
+                <option value="">All Invoices</option>
+                <option value="Paid" {% if selected_status == 'Paid' %}selected{% endif %}>Fully Paid</option>
+                <option value="Partial" {% if selected_status == 'Partial' %}selected{% endif %}>Partially Paid</option>
+                <option value="Unpaid" {% if selected_status == 'Unpaid' %}selected{% endif %}>Unpaid Dues</option>
+            </select>
+
+            <div class="flex items-center gap-2">
+                <button type="submit" class="w-full bg-slate-900 hover:bg-slate-800 text-white text-xs font-semibold py-2 rounded-xl transition-colors">
+                    Filter Invoices
+                </button>
+                <a href="{{ url_for('fees_list') }}" class="px-3 py-2 text-xs font-medium text-slate-500 hover:text-slate-800 bg-slate-100 rounded-xl">
+                    Reset
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Invoices Table -->
+    <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-xs">
+                <thead class="bg-slate-50 text-slate-500 font-semibold border-b border-slate-200 uppercase tracking-wider text-[11px]">
+                    <tr>
+                        <th class="py-3 px-4">Invoice No</th>
+                        <th class="py-3 px-4">Student</th>
+                        <th class="py-3 px-4">Category</th>
+                        <th class="py-3 px-4 text-right">Amount</th>
+                        <th class="py-3 px-4 text-right">Paid</th>
+                        <th class="py-3 px-4 text-right">Balance</th>
+                        <th class="py-3 px-4">Due Date</th>
+                        <th class="py-3 px-4 text-center">Status</th>
+                        <th class="py-3 px-4 text-right">Action</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100 text-slate-700">
+                    {% for inv in invoices %}
+                    <tr class="hover:bg-slate-50 transition-colors">
+                        <td class="py-3 px-4 font-mono font-bold text-slate-900">{{ inv.invoice_no }}</td>
+                        <td class="py-3 px-4">
+                            <a href="{{ url_for('student_detail', id=inv.student_id) }}" class="font-semibold text-slate-900 hover:text-blue-600">
+                                {{ inv.first_name }} {{ inv.last_name }}
+                            </a>
+                            <p class="text-[11px] text-slate-400 font-mono">#{{ inv.roll_no }} &bull; {{ inv.class_name }}</p>
+                        </td>
+                        <td class="py-3 px-4 font-medium">{{ inv.fee_type_name }}</td>
+                        <td class="py-3 px-4 text-right font-semibold">{{ inv.amount|currency }}</td>
+                        <td class="py-3 px-4 text-right font-semibold text-emerald-600">{{ inv.paid_amount|currency }}</td>
+                        <td class="py-3 px-4 text-right font-semibold text-amber-700">{{ (inv.amount - inv.paid_amount)|currency }}</td>
+                        <td class="py-3 px-4 text-slate-500">{{ inv.due_date }}</td>
+                        <td class="py-3 px-4 text-center">
+                            <span class="text-[10px] font-bold px-2 py-0.5 rounded-full uppercase
+                                {% if inv.status == 'Paid' %}bg-emerald-100 text-emerald-800
+                                {% elif inv.status == 'Partial' %}bg-amber-100 text-amber-800
+                                {% else %}bg-rose-100 text-rose-800{% endif %}">
+                                {{ inv.status }}
+                            </span>
+                        </td>
+                        <td class="py-3 px-4 text-right">
+                            {% if inv.status != 'Paid' %}
+                            <button onclick="recordPaymentModal('{{ inv.id }}', '{{ inv.invoice_no }}', '{{ inv.amount - inv.paid_amount }}', '{{ inv.first_name }} {{ inv.last_name }}')"
+                                class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold text-[11px] px-2.5 py-1 rounded-lg shadow-sm transition-colors">
+                                Pay
+                            </button>
+                            {% else %}
+                            <span class="text-xs font-semibold text-emerald-600"><i class="fa-solid fa-check mr-1"></i> Paid</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- Modal: Issue Invoice -->
+    <div id="addInvoiceModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-5">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                <h3 class="text-sm font-bold text-slate-900">Issue Fee Invoice</h3>
+                <button onclick="closeModal('addInvoiceModal')" class="text-slate-400 hover:text-slate-700">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <form method="POST" action="{{ url_for('fee_invoice_create') }}" class="space-y-4 text-xs">
+                <div>
+                    <label class="block font-semibold text-slate-700 mb-1">Select Student *</label>
+                    <select name="student_id" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 focus:ring-2 focus:ring-blue-500">
+                        {% for s in students %}
+                        <option value="{{ s.id }}">{{ s.first_name }} {{ s.last_name }} ({{ s.admission_no }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div>
+                    <label class="block font-semibold text-slate-700 mb-1">Fee Category *</label>
+                    <select name="fee_type_id" id="fee_type_select" onchange="updateDefaultAmount()" required class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 focus:ring-2 focus:ring-blue-500">
+                        {% for ft in fee_types %}
+                        <option value="{{ ft.id }}" data-amt="{{ ft.default_amount }}">{{ ft.name }} (${{ ft.default_amount }})</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block font-semibold text-slate-700 mb-1">Amount ($) *</label>
+                        <input type="number" step="0.01" name="amount" id="invoice_amt" required value="1200.00"
+                            class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 focus:ring-2 focus:ring-blue-500">
+                    </div>
+                    <div>
+                        <label class="block font-semibold text-slate-700 mb-1">Due Date *</label>
+                        <input type="date" name="due_date" required value="{{ now.strftime('%Y-%m-%d') }}"
+                            class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 focus:ring-2 focus:ring-blue-500">
+                    </div>
+                </div>
+
+                <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+                    <button type="button" onclick="closeModal('addInvoiceModal')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold px-4 py-2 rounded-xl">
+                        Cancel
+                    </button>
+                    <button type="submit" class="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-5 py-2 rounded-xl">
+                        Issue Statement
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal: Record Payment -->
+    <div id="recordPaymentModal" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden items-center justify-center p-4">
+        <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl space-y-5">
+            <div class="flex items-center justify-between border-b border-slate-100 pb-3">
+                <div>
+                    <h3 class="text-sm font-bold text-slate-900">Record Fee Payment</h3>
+                    <p id="pay_student_label" class="text-xs text-blue-600 font-semibold"></p>
+                </div>
+                <button onclick="closeModal('recordPaymentModal')" class="text-slate-400 hover:text-slate-700">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+
+            <form method="POST" action="{{ url_for('fee_payment_record') }}" class="space-y-4 text-xs">
+                <input type="hidden" name="invoice_id" id="pay_invoice_id">
+
+                <div>
+                    <label class="block font-semibold text-slate-700 mb-1">Amount to Pay ($) *</label>
+                    <input type="number" step="0.01" name="amount_paid" id="pay_amount" required
+                        class="w-full font-bold text-sm bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 focus:ring-2 focus:ring-emerald-500">
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block font-semibold text-slate-700 mb-1">Payment Method *</label>
+                        <select name="payment_method" class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 focus:ring-2 focus:ring-emerald-500">
+                            <option value="Cash">Cash</option>
+                            <option value="Online">Online / Wire</option>
+                            <option value="Card">Credit / Debit Card</option>
+                            <option value="Cheque">Bank Cheque</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block font-semibold text-slate-700 mb-1">Payment Date *</label>
+                        <input type="date" name="payment_date" value="{{ now.strftime('%Y-%m-%d') }}"
+                            class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 focus:ring-2 focus:ring-emerald-500">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="block font-semibold text-slate-700 mb-1">Transaction Ref / Cheque No</label>
+                    <input type="text" name="transaction_ref" placeholder="e.g. TXN-892123"
+                        class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 focus:ring-2 focus:ring-emerald-500">
+                </div>
+
+                <div>
+                    <label class="block font-semibold text-slate-700 mb-1">Notes / Remarks</label>
+                    <input type="text" name="notes" placeholder="Optional notes..."
+                        class="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 focus:ring-2 focus:ring-emerald-500">
+                </div>
+
+                <div class="flex items-center justify-end gap-2 pt-3 border-t border-slate-100">
+                    <button type="button" onclick="closeModal('recordPaymentModal')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 font-semibold px-4 py-2 rounded-xl">
+                        Cancel
+                    </button>
+                    <button type="submit" class="bg-emerald-600 hover:bg-emerald-700 text-white font-semibold px-5 py-2 rounded-xl">
+                        Confirm Payment & Generate Receipt
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function recordPaymentModal(invoiceId, invoiceNo, dueBalance, studentName) {
+    document.getElementById('pay_invoice_id').value = invoiceId;
+    document.getElementById('pay_amount').value = parseFloat(dueBalance).toFixed(2);
+    document.getElementById('pay_student_label').innerText = `${studentName} &bull; ${invoiceNo}`;
+    openModal('recordPaymentModal');
+}
+
+function updateDefaultAmount() {
+    const sel = document.getElementById('fee_type_select');
+    const amt = sel.options[sel.selectedIndex].getAttribute('data-amt');
+    if (amt) {
+        document.getElementById('invoice_amt').value = parseFloat(amt).toFixed(2);
+    }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,304 @@
+{% extends "base.html" %}
+
+{% block title %}{{ student.first_name }} {{ student.last_name }} - Profile{% endblock %}
+{% block header_title %}Student 360&deg; Profile{% endblock %}
+
+{% block content %}
+<div class="space-y-6 pb-12">
+
+    <!-- Profile Header Card -->
+    <div class="bg-white p-6 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+        <div class="flex items-center gap-5">
+            <img src="{{ student.avatar_url }}" alt="avatar" class="w-20 h-20 rounded-2xl bg-slate-100 border-2 border-slate-200 p-1 shadow-sm">
+            <div>
+                <div class="flex items-center gap-3">
+                    <h2 class="text-xl font-bold text-slate-900">{{ student.first_name }} {{ student.last_name }}</h2>
+                    <span class="text-[10px] font-bold px-2.5 py-0.5 rounded-full uppercase badge-{{ student.status.lower() }}">
+                        {{ student.status }}
+                    </span>
+                </div>
+                <p class="text-xs text-slate-500 mt-1 flex flex-wrap items-center gap-3">
+                    <span><i class="fa-solid fa-graduation-cap mr-1 text-blue-600"></i>{{ student.class_name }}</span>
+                    <span>&bull;</span>
+                    <span><i class="fa-solid fa-hashtag mr-1 text-slate-400"></i>Roll: <b>{{ student.roll_no }}</b></span>
+                    <span>&bull;</span>
+                    <span><i class="fa-solid fa-id-card-clip mr-1 text-slate-400"></i>Adm: <b>{{ student.admission_no }}</b></span>
+                </p>
+                <p class="text-[11px] text-slate-400 mt-1">
+                    Class Teacher: <b>{{ student.class_teacher_name or 'Unassigned' }}</b> &bull; Room: {{ student.room_number or 'N/A' }}
+                </p>
+            </div>
+        </div>
+
+        <!-- Quick Action Buttons -->
+        <div class="flex flex-wrap items-center gap-2">
+            <a href="{{ url_for('student_id_card', id=student.id) }}" class="inline-flex items-center gap-2 bg-indigo-50 hover:bg-indigo-100 text-indigo-700 text-xs font-semibold px-3.5 py-2 rounded-xl transition-colors">
+                <i class="fa-solid fa-id-card"></i>
+                <span>Print ID Badge</span>
+            </a>
+            <a href="{{ url_for('student_edit', id=student.id) }}" class="inline-flex items-center gap-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold px-3.5 py-2 rounded-xl transition-colors">
+                <i class="fa-solid fa-pen-to-square"></i>
+                <span>Edit Profile</span>
+            </a>
+        </div>
+    </div>
+
+    <!-- KPI Summary Row for Student -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-5">
+        <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
+            <div>
+                <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Attendance Rate</p>
+                <h3 class="text-2xl font-bold text-slate-900 mt-1">{{ attendance_rate|percent }}</h3>
+                <p class="text-xs text-slate-400 mt-1">{{ att_stats.present_days or 0 }} present of {{ att_stats.total_days or 0 }} days</p>
+            </div>
+            <div class="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl">
+                <i class="fa-solid fa-calendar-check"></i>
+            </div>
+        </div>
+
+        <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
+            <div>
+                <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Subjects Enrolled</p>
+                <h3 class="text-2xl font-bold text-slate-900 mt-1">{{ grades|length }}</h3>
+                <p class="text-xs text-slate-400 mt-1">Graded Assessments on record</p>
+            </div>
+            <div class="w-12 h-12 rounded-2xl bg-blue-50 text-blue-600 flex items-center justify-center text-xl">
+                <i class="fa-solid fa-book-open"></i>
+            </div>
+        </div>
+
+        <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex items-center justify-between">
+            <div>
+                <p class="text-xs font-semibold text-slate-500 uppercase tracking-wider">Fee Invoices</p>
+                <h3 class="text-2xl font-bold text-slate-900 mt-1">{{ invoices|length }}</h3>
+                <p class="text-xs text-slate-400 mt-1">Billing statements</p>
+            </div>
+            <div class="w-12 h-12 rounded-2xl bg-amber-50 text-amber-600 flex items-center justify-center text-xl">
+                <i class="fa-solid fa-receipt"></i>
+            </div>
+        </div>
+    </div>
+
+    <!-- Detailed Tabs Section -->
+    <div class="bg-white rounded-2xl border border-slate-200/80 shadow-sm overflow-hidden">
+        <!-- Tabs Header -->
+        <div class="flex border-b border-slate-200 px-6 pt-2 space-x-6 text-xs font-semibold">
+            <button onclick="switchTab('tab-bio', this)" class="tab-btn py-3 border-b-2 border-blue-600 text-blue-600 transition-colors">
+                Personal & Guardian Info
+            </button>
+            <button onclick="switchTab('tab-grades', this)" class="tab-btn py-3 border-b-2 border-transparent text-slate-500 hover:text-slate-800 transition-colors">
+                Academic Results & Grades
+            </button>
+            <button onclick="switchTab('tab-attendance', this)" class="tab-btn py-3 border-b-2 border-transparent text-slate-500 hover:text-slate-800 transition-colors">
+                Attendance Log
+            </button>
+            <button onclick="switchTab('tab-fees', this)" class="tab-btn py-3 border-b-2 border-transparent text-slate-500 hover:text-slate-800 transition-colors">
+                Fee & Billing History
+            </button>
+        </div>
+
+        <!-- Tab 1: Bio & Contact -->
+        <div id="tab-bio" class="tab-content p-6 space-y-6">
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <!-- Personal Info Box -->
+                <div class="space-y-4">
+                    <h4 class="text-xs font-bold text-slate-900 uppercase tracking-wider">Personal Information</h4>
+                    <div class="bg-slate-50 p-4 rounded-xl space-y-2.5 text-xs text-slate-700">
+                        <div class="flex justify-between py-1 border-b border-slate-200/60">
+                            <span class="text-slate-400">Date of Birth:</span>
+                            <span class="font-semibold">{{ student.dob }}</span>
+                        </div>
+                        <div class="flex justify-between py-1 border-b border-slate-200/60">
+                            <span class="text-slate-400">Gender:</span>
+                            <span class="font-semibold">{{ student.gender }}</span>
+                        </div>
+                        <div class="flex justify-between py-1 border-b border-slate-200/60">
+                            <span class="text-slate-400">Blood Group:</span>
+                            <span class="font-semibold">{{ student.blood_group or 'N/A' }}</span>
+                        </div>
+                        <div class="flex justify-between py-1 border-b border-slate-200/60">
+                            <span class="text-slate-400">Student Email:</span>
+                            <span class="font-semibold">{{ student.email or 'N/A' }}</span>
+                        </div>
+                        <div class="flex justify-between py-1 border-b border-slate-200/60">
+                            <span class="text-slate-400">Student Phone:</span>
+                            <span class="font-semibold">{{ student.phone or 'N/A' }}</span>
+                        </div>
+                        <div class="flex justify-between py-1">
+                            <span class="text-slate-400">Address:</span>
+                            <span class="font-semibold text-right">{{ student.address or 'N/A' }}</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Guardian Info Box -->
+                <div class="space-y-4">
+                    <h4 class="text-xs font-bold text-slate-900 uppercase tracking-wider">Parent / Guardian Records</h4>
+                    <div class="bg-slate-50 p-4 rounded-xl space-y-2.5 text-xs text-slate-700">
+                        <div class="flex justify-between py-1 border-b border-slate-200/60">
+                            <span class="text-slate-400">Primary Contact:</span>
+                            <span class="font-semibold">{{ student.parent_name }}</span>
+                        </div>
+                        <div class="flex justify-between py-1 border-b border-slate-200/60">
+                            <span class="text-slate-400">Relationship:</span>
+                            <span class="font-semibold">{{ student.parent_relation }}</span>
+                        </div>
+                        <div class="flex justify-between py-1 border-b border-slate-200/60">
+                            <span class="text-slate-400">Emergency Phone:</span>
+                            <span class="font-semibold text-blue-600">{{ student.parent_phone }}</span>
+                        </div>
+                        <div class="flex justify-between py-1 border-b border-slate-200/60">
+                            <span class="text-slate-400">Guardian Email:</span>
+                            <span class="font-semibold">{{ student.parent_email or 'N/A' }}</span>
+                        </div>
+                        <div class="flex justify-between py-1">
+                            <span class="text-slate-400">Admission Date:</span>
+                            <span class="font-semibold">{{ student.admission_date }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab 2: Grades & Results -->
+        <div id="tab-grades" class="tab-content p-6 hidden">
+            <div class="flex items-center justify-between mb-4">
+                <h4 class="text-xs font-bold text-slate-900 uppercase tracking-wider">Assessment Grades</h4>
+                {% if grades %}
+                <a href="{{ url_for('report_card', student_id=student.id, exam_id=grades[0].exam_id) }}" class="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-600 hover:text-blue-700">
+                    <i class="fa-solid fa-file-lines"></i> View Official Report Card &rarr;
+                </a>
+                {% endif %}
+            </div>
+
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs">
+                    <thead class="bg-slate-50 text-slate-500 font-semibold border-b border-slate-200 uppercase tracking-wider text-[11px]">
+                        <tr>
+                            <th class="py-2.5 px-3">Exam</th>
+                            <th class="py-2.5 px-3">Subject Code & Name</th>
+                            <th class="py-2.5 px-3 text-center">Marks Obtained</th>
+                            <th class="py-2.5 px-3 text-center">Max Marks</th>
+                            <th class="py-2.5 px-3 text-center">Grade</th>
+                            <th class="py-2.5 px-3">Remarks</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100">
+                        {% for g in grades %}
+                        <tr class="hover:bg-slate-50">
+                            <td class="py-2.5 px-3 font-medium text-slate-800">{{ g.exam_name }}</td>
+                            <td class="py-2.5 px-3"><b>{{ g.subject_code }}</b> - {{ g.subject_name }}</td>
+                            <td class="py-2.5 px-3 text-center font-bold text-slate-900">{{ g.marks_obtained }}</td>
+                            <td class="py-2.5 px-3 text-center text-slate-500">{{ g.max_marks }}</td>
+                            <td class="py-2.5 px-3 text-center">
+                                <span class="px-2 py-0.5 rounded font-bold
+                                    {% if g.grade_letter in ['A+', 'A'] %}bg-emerald-100 text-emerald-800
+                                    {% elif g.grade_letter in ['B', 'C'] %}bg-blue-100 text-blue-800
+                                    {% else %}bg-rose-100 text-rose-800{% endif %}">
+                                    {{ g.grade_letter }}
+                                </span>
+                            </td>
+                            <td class="py-2.5 px-3 text-slate-500">{{ g.remarks or '-' }}</td>
+                        </tr>
+                        {% else %}
+                        <tr><td colspan="6" class="py-6 text-center text-slate-400">No exam marks entered yet.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Tab 3: Attendance -->
+        <div id="tab-attendance" class="tab-content p-6 hidden">
+            <h4 class="text-xs font-bold text-slate-900 uppercase tracking-wider mb-4">Recent Daily Attendance Logs</h4>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs">
+                    <thead class="bg-slate-50 text-slate-500 font-semibold border-b border-slate-200 uppercase tracking-wider text-[11px]">
+                        <tr>
+                            <th class="py-2.5 px-3">Date</th>
+                            <th class="py-2.5 px-3">Status</th>
+                            <th class="py-2.5 px-3">Remarks</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100">
+                        {% for a in recent_attendance %}
+                        <tr class="hover:bg-slate-50">
+                            <td class="py-2.5 px-3 font-medium text-slate-800">{{ a.date }}</td>
+                            <td class="py-2.5 px-3">
+                                <span class="text-[10px] font-bold px-2 py-0.5 rounded uppercase
+                                    {% if a.status == 'Present' %}bg-emerald-100 text-emerald-800
+                                    {% elif a.status == 'Absent' %}bg-rose-100 text-rose-800
+                                    {% elif a.status == 'Late' %}bg-amber-100 text-amber-800
+                                    {% else %}bg-indigo-100 text-indigo-800{% endif %}">
+                                    {{ a.status }}
+                                </span>
+                            </td>
+                            <td class="py-2.5 px-3 text-slate-500">{{ a.remarks or '-' }}</td>
+                        </tr>
+                        {% else %}
+                        <tr><td colspan="3" class="py-6 text-center text-slate-400">No attendance records logged yet.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Tab 4: Fees -->
+        <div id="tab-fees" class="tab-content p-6 hidden">
+            <h4 class="text-xs font-bold text-slate-900 uppercase tracking-wider mb-4">Billing Invoices & Receipts</h4>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left text-xs">
+                    <thead class="bg-slate-50 text-slate-500 font-semibold border-b border-slate-200 uppercase tracking-wider text-[11px]">
+                        <tr>
+                            <th class="py-2.5 px-3">Invoice No</th>
+                            <th class="py-2.5 px-3">Fee Type</th>
+                            <th class="py-2.5 px-3">Total Amount</th>
+                            <th class="py-2.5 px-3">Paid Amount</th>
+                            <th class="py-2.5 px-3">Due Date</th>
+                            <th class="py-2.5 px-3">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-100">
+                        {% for inv in invoices %}
+                        <tr class="hover:bg-slate-50">
+                            <td class="py-2.5 px-3 font-mono font-bold text-slate-900">{{ inv.invoice_no }}</td>
+                            <td class="py-2.5 px-3 font-medium text-slate-800">{{ inv.fee_type_name }}</td>
+                            <td class="py-2.5 px-3 font-semibold">{{ inv.amount|currency }}</td>
+                            <td class="py-2.5 px-3 font-semibold text-emerald-600">{{ inv.paid_amount|currency }}</td>
+                            <td class="py-2.5 px-3 text-slate-500">{{ inv.due_date }}</td>
+                            <td class="py-2.5 px-3">
+                                <span class="text-[10px] font-bold px-2 py-0.5 rounded uppercase
+                                    {% if inv.status == 'Paid' %}bg-emerald-100 text-emerald-800
+                                    {% elif inv.status == 'Partial' %}bg-amber-100 text-amber-800
+                                    {% else %}bg-rose-100 text-rose-800{% endif %}">
+                                    {{ inv.status }}
+                                </span>
+                            </td>
+                        </tr>
+                        {% else %}
+                        <tr><td colspan="6" class="py-6 text-center text-slate-400">No invoices issued.</td></tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+function switchTab(tabId, btn) {
+    document.querySelectorAll('.tab-content').forEach(el => el.classList.add('hidden'));
+    document.querySelectorAll('.tab-btn').forEach(b => {
+        b.classList.remove('border-blue-600', 'text-blue-600');
+        b.classList.add('border-transparent', 'text-slate-500');
+    });
+
+    document.getElementById(tabId).classList.remove('hidden');
+    btn.classList.add('border-blue-600', 'text-blue-600');
+    btn.classList.remove('border-transparent', 'text-slate-500');
+}
+</script>
+{% endblock %}
