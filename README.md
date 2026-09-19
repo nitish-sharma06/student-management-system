@@ -1,88 +1,73 @@
-# Apex Student Management System (SMS)
+# 🎓 Apex Student Management System (SMS)
 
-A complete, production-grade educational administration and Student Information System (SIS) built with **Python (Flask)**, **SQLite**, and **ReportLab**.
+[![Open in Streamlit](https://static.streamlit.io/badges/streamlit_badge_black_white.svg)](https://share.streamlit.io/deploy?repository=nitish-sharma06/student-management-system&branch=main&mainModule=streamlit_app.py)
+[![GitHub license](https://img.shields.io/github/license/nitish-sharma06/student-management-system)](https://github.com/nitish-sharma06/student-management-system)
+[![Python 3.11](https://img.shields.io/badge/python-3.11-blue.svg)](https://www.python.org/downloads/)
+[![Streamlit Cloud](https://img.shields.io/badge/Streamlit-Cloud%20Deployable-FF4B4B?logo=streamlit&logoColor=white)](https://share.streamlit.io/deploy?repository=nitish-sharma06/student-management-system&branch=main&mainModule=streamlit_app.py)
+
+A complete, production-grade educational administration and Student Information System (SIS) built with **Python**, **Streamlit Cloud**, **Flask**, **SQLite**, and **ReportLab**.
 
 ---
 
-## 🌟 Key Features
+## 🚀 Live Demo & One-Click Cloud Run
 
-1. **Institutional Dashboard & Analytics**:
-   - Executive KPIs: Total Students, Total Faculty, Overall Attendance Rate, Total Fees Collected vs. Pending.
-   - Dynamic interactive charts (Chart.js): Academic Grade Distribution, Attendance Ratios, and Enrollment trends.
-   - Management Action Hub with quick shortcuts.
+Anyone can run this project in their browser instantly without installing anything:
 
-2. **Student Lifecycle Management**:
-   - Comprehensive student registry with instant search, filtering by grade/section/status.
-   - Detailed Student Profile (360° view): Personal bio, Emergency contact, Academic standing, Attendance log, Fee ledger.
-   - Full student registration/admission wizard.
-   - **Student ID Card Badge generator** (Printable layout with photo, barcode, and principal signature).
-   - CSV Directory Export.
+👉 **[Launch Live on Streamlit Cloud](https://share.streamlit.io/deploy?repository=nitish-sharma06/student-management-system&branch=main&mainModule=streamlit_app.py)**
 
-3. **Classes & Curriculum Management**:
-   - Classrooms & Sections management with room numbers and assigned class tutors.
-   - Course curriculum and subjects directory with credit hours and assigned faculty.
+---
+
+## 🌟 Key Management Modules
+
+1. **Executive Dashboard & Analytics**:
+   - High-level KPIs: Enrolled Students, Teaching Faculty, Campus Attendance %, Fees Collected vs. Pending.
+   - Interactive analytics charts: Grade performance distribution and daily attendance ratios.
+   - Live activity streams for newly registered students and campus notices.
+
+2. **Student 360° Directory & Dossiers**:
+   - Instant search-as-you-type and multi-filter registry (by class, section, status).
+   - Comprehensive student profile tabs: Bio, emergency contacts, exam transcripts, attendance logs, and fee history.
+   - **Student ID Card Badge generator** (standard ID-1 PVC badge layout with barcode and signatures).
+   - One-click **CSV Roster Export**.
+
+3. **Admissions & Registration**:
+   - Streamlined admission portal generating admission numbers and student avatars with input validation.
 
 4. **Batch Attendance Tracking**:
-   - Fast batch attendance marker for entire classrooms with "Mark All Present" shortcut.
-   - Attendance percentages automatically computed per student and per class.
-   - Class attendance register report with low attendance (<75%) warning highlights.
+   - Rapid daily roll call marker with a "Mark All Present" shortcut.
+   - Class attendance register calculating overall attendance rates and flagging defaulters below 75%.
 
-5. **Examinations, Grading & Report Cards**:
-   - Schedule exam terms (Mid-Term, Semester Finals, Assessments).
-   - Batch marks entry sheet with instant max-mark validation and automatic letter grade calculation (A+, A, B, C, D, F).
-   - **Official Academic Report Card / Transcript**:
-     - Beautiful printable format (Ctrl+P).
-     - One-click downloadable vector PDF generated via ReportLab.
+5. **Examinations & Gradebook**:
+   - Exam scheduler (Mid-Term, Semester Finals, Assessments).
+   - Gradebook marks entry sheet with automatic letter grade calculation (A+, A, B, C, D, F).
+   - **Official Academic Report Card / Transcript** (Printable HTML view & downloadable vector PDF).
 
 6. **Fee Management & Invoicing**:
-   - Invoice generation per student with fee types (Tuition, Laboratory, Library, Sports).
-   - Payment collection and recording (Cash, Online, Card, Cheque) with transaction references.
-   - Automatic invoice status transition (Paid, Partial, Unpaid).
-   - **Official Fee Payment Receipt**:
-     - Printable layout with school authorization seal.
-     - One-click downloadable vector PDF.
+   - Invoicing per student across fee categories (Tuition, Laboratory, Library, Sports).
+   - Payment collection and recording (Cash, Card, Online, Cheque) with transaction references.
+   - **Official Fee Payment Receipt** (Printable view & downloadable vector PDF).
 
-7. **Faculty & Staff Directory**:
-   - Teacher profiles with designations, departments, employee IDs, qualifications, and subject assignments.
+7. **Faculty Directory**:
+   - Instructor profiles, departments, designations, qualifications, and taught courses.
 
-8. **Noticeboard & Communication**:
-   - Broadcast notices targeted to All, Students, Teachers, or Parents.
-   - Urgency indicators (Urgent, Normal, Low).
+8. **Campus Noticeboard**:
+   - Broadcast advisories with audience targeting (Students, Faculty, Parents) and urgency badges.
 
 ---
 
-## 🚀 Quick Start Guide
+## 💻 Running Locally
 
-### Option 1: Double-Click Launcher (Windows)
-Double-click `run.bat` in this folder.
-
-### Option 2: PowerShell
-```powershell
-.\run.ps1
+### Streamlit Mode:
+```bash
+streamlit run streamlit_app.py
 ```
+*Access at: `http://localhost:8501`*
 
-### Option 3: Manual Command
-```powershell
-& "C:\Users\ayush\AppData\Local\Programs\Python\Python311\python.exe" app.py
+### Flask Mode:
+```bash
+python app.py
 ```
+*Access at: `http://127.0.0.1:5000`*
 
-Open your browser and visit:
-👉 **http://127.0.0.1:5000**
-
----
-
-## 🗄️ Database & Pre-Seeded Sample Data
-
-The project is pre-seeded with realistic data inside `sms.db`:
-- **30 Enrolled Students** across 5 grade levels with realistic contacts and parent info.
-- **8 Teaching Faculty Members** across departments.
-- **5 Classes & 8 Subjects** mapped with credits.
-- **14 Days of Attendance Records** logged for every student.
-- **2 Examination Schedules** with complete grades entered.
-- **Invoices & Payment Records** with real transactions.
-- **Active Noticeboard Announcements**.
-
-To re-seed fresh demo data at any time:
-```powershell
-& "C:\Users\ayush\AppData\Local\Programs\Python\Python311\python.exe" seed_data.py
-```
+### Windows Launchers:
+- Double-click `run.bat` or run `./run.ps1`
